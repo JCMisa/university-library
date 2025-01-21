@@ -34,3 +34,15 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+Image Kit docs:
+
+- login to your imagekit account and get the endpoint url, public key, and private key
+- install the package: npm install imagekitio-next
+- go to fileUpload page and import the necessary package
+
+Drizzle docs:
+
+- to generate migration folder, run: npx drizzle-kit generate
+- to run migration, run: npx drizzle-kit migrate
+- to simplify, go to package.json and add scripts that run same commands
