@@ -43,6 +43,18 @@ Image Kit docs:
 
 Drizzle docs:
 
-- to generate migration folder, run: npx drizzle-kit generate
-- to run migration, run: npx drizzle-kit migrate
+- to generate migration folder, run:
+  npx drizzle-kit generate
+- to run migration, run:
+  npx drizzle-kit migrate
 - to simplify, go to package.json and add scripts that run same commands
+
+Auth JS docs:
+
+- to install authjs, run:
+  npm install next-auth@beta bcryptjs
+- run this to generate mandatory env variable for authjs:
+  npx auth secret
+- crete new auth.ts file in the root of our directory
+- inside api folder create auth folder and then inside create [...nextauth] folder and inside create route.ts
+- create file named middlware.ts in the root of directory
