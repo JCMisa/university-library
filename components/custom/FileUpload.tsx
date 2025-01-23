@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { toast } from "@/hooks/use-toast";
-import config from "@/lib/config";
-import { cn } from "@/lib/utils";
 import { IKImage, ImageKitProvider, IKUpload, IKVideo } from "imagekitio-next";
-import Image from "next/image";
+import config from "@/lib/config";
 import { useRef, useState } from "react";
+import Image from "next/image";
+import { toast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 const {
   env: {
@@ -31,8 +31,8 @@ const authenticator = async () => {
     const { signature, expire, token } = data;
 
     return { token, expire, signature };
-  } catch (error) {
-    throw new Error(`Authentication request failed: ${error}`);
+  } catch (error: any) {
+    throw new Error(`Authentication request failed: ${error.message}`);
   }
 };
 
@@ -59,6 +59,7 @@ const FileUpload = ({
   const [file, setFile] = useState<{ filePath: string | null }>({
     filePath: value ?? null,
   });
+  const [progress, setProgress] = useState(0);
 
   const styles = {
     button:
@@ -70,7 +71,7 @@ const FileUpload = ({
   };
 
   const onError = (error: any) => {
-    console.log("image upload error: ", error.message);
+    console.log(error);
 
     toast({
       title: `${type} upload failed`,
@@ -89,6 +90,31 @@ const FileUpload = ({
     });
   };
 
+  const onValidate = (file: File) => {
+    if (type === "image") {
+      if (file.size > 20 * 1024 * 1024) {
+        toast({
+          title: "File size too large",
+          description: "Please upload a file that is less than 20MB in size",
+          variant: "destructive",
+        });
+
+        return false;
+      }
+    } else if (type === "video") {
+      if (file.size > 50 * 1024 * 1024) {
+        toast({
+          title: "File size too large",
+          description: "Please upload a file that is less than 50MB in size",
+          variant: "destructive",
+        });
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   return (
     <ImageKitProvider
       publicKey={publicKey}
@@ -96,19 +122,29 @@ const FileUpload = ({
       authenticator={authenticator}
     >
       <IKUpload
-        className="hidden"
         ref={ikUploadRef}
         onError={onError}
         onSuccess={onSuccess}
-        fileName="test-upload.png"
+        useUniqueFileName={true}
+        validateFile={onValidate}
+        onUploadStart={() => setProgress(0)}
+        onUploadProgress={({ loaded, total }) => {
+          const percent = Math.round((loaded / total) * 100);
+
+          setProgress(percent);
+        }}
+        folder={folder}
+        accept={accept}
+        className="hidden"
       />
+
       <button
         className={cn("upload-btn", styles.button)}
         onClick={(e) => {
           e.preventDefault();
 
           if (ikUploadRef.current) {
-            // @ts-expect-error suppress this error
+            // @ts-expect-error ignore this error
             ikUploadRef.current?.click();
           }
         }}
@@ -128,17 +164,25 @@ const FileUpload = ({
         )}
       </button>
 
+      {progress > 0 && progress !== 100 && (
+        <div className="w-full rounded-full bg-green-200">
+          <div className="progress" style={{ width: `${progress}%` }}>
+            {progress}%
+          </div>
+        </div>
+      )}
+
       {file &&
         (type === "image" ? (
           <IKImage
-            alt={file.filePath as string}
-            path={file.filePath as string}
+            alt={file.filePath || ""}
+            path={file.filePath || ""}
             width={500}
             height={300}
           />
         ) : type === "video" ? (
           <IKVideo
-            path={file.filePath as string}
+            path={file.filePath || ""}
             controls={true}
             className="h-96 w-full rounded-xl"
           />
